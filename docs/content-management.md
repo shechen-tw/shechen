@@ -24,7 +24,7 @@
 2. 送審後進入 In review。
 3. 在 CMS 介面按 Publish 才會合併並觸發部署。
 
-`main` 的必要檢查 `build` 必須先通過才能合併。若剛存檔就馬上按 Publish，CI 還沒跑完會被挡下（訊息：`Required status check "build" is expected`），等綠燈後再按一次 Publish 即可。
+`main` 的必要檢查 `build` 必須先通過才能合併，但 CMS 登入的帳號已列為 ruleset 的 bypass actor，發布時不必等 CI。CI 仍會照跑，只是紅燈不會擋住發布；若紅燈，發布後補看結果即可。
 
 ## 圖片
 
