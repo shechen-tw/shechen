@@ -2,11 +2,12 @@
 
 ## 變數
 
-| 變數                   | 用途                                      |
-| ---------------------- | ----------------------------------------- |
-| `GITHUB_CLIENT_ID`     | GitHub OAuth App 的 Client ID             |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth App 的 Client Secret（機密） |
-| `SITE_URL`             | 站台的 canonical URL                      |
+| 變數                   | 用途                                   |
+| ---------------------- | -------------------------------------- |
+| `GITHUB_CLIENT_ID`     | GitHub App 的 Client ID                |
+| `GITHUB_CLIENT_SECRET` | GitHub App 的 Client Secret（機密）    |
+| `GITHUB_REPOSITORY_ID` | 限定 token 只能存取單一 repo（非機密） |
+| `SITE_URL`             | 站台的 canonical URL                   |
 
 ## 本機
 
@@ -16,7 +17,7 @@
 
 ## 正式環境
 
-- 非機密（`GITHUB_CLIENT_ID`、`SITE_URL`）：`wrangler.toml` 的 `[vars]` 或後台 Settings → Variables & Secrets。
+- 非機密（`GITHUB_CLIENT_ID`、`GITHUB_REPOSITORY_ID`、`SITE_URL`）：`wrangler.toml` 的 `[vars]` 或後台 Settings → Variables & Secrets。
 - 機密（`GITHUB_CLIENT_SECRET`）：只能走 secret，不進版控。
 
 ```bash

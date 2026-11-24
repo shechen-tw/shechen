@@ -34,12 +34,12 @@ npx wrangler deploy --dry-run
 
 ## 文件
 
-| 文件                                                       | 內容                    |
-| ---------------------------------------------------------- | ----------------------- |
-| [`docs/development.md`](docs/development.md)               | 本機開發與指令          |
-| [`docs/environment.md`](docs/environment.md)               | 環境變數與 secret       |
-| [`docs/deployment.md`](docs/deployment.md)                 | 部署與 GitHub OAuth App |
-| [`docs/content-management.md`](docs/content-management.md) | `/admin/` 使用方式      |
-| [`docs/domains-and-naming.md`](docs/domains-and-naming.md) | 網域與 Worker 命名規則  |
-| [`docs/contributing.md`](docs/contributing.md)             | 分支保護、PR 流程、CI   |
-| [`docs/project-structure.md`](docs/project-structure.md)   | 目錄結構                |
+| 文件                                                       | 內容                   |
+| ---------------------------------------------------------- | ---------------------- |
+| [`docs/development.md`](docs/development.md)               | 本機開發與指令         |
+| [`docs/environment.md`](docs/environment.md)               | 環境變數與 secret      |
+| [`docs/deployment.md`](docs/deployment.md)                 | 部署與 GitHub App 設定 |
+| [`docs/content-management.md`](docs/content-management.md) | `/admin/` 使用方式     |
+| [`docs/domains-and-naming.md`](docs/domains-and-naming.md) | 網域與 Worker 命名規則 |
+| [`docs/contributing.md`](docs/contributing.md)             | 分支保護、PR 流程、CI  |
+| [`docs/project-structure.md`](docs/project-structure.md)   | 目錄結構               |

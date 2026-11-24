@@ -34,14 +34,31 @@ flowchart LR
 4. 取得網址後填入 `public/admin/config.yml` 的 `base_url`、`site_url`、`display_url` 並重新部署。
 5. 接上 Workers Builds（連 GitHub、建置指令 `pnpm build`），之後 push 即自動部署。
 
-## GitHub OAuth App
+## GitHub App（OAuth）
 
-1. <https://github.com/settings/developers> → New OAuth App。
-2. Homepage URL 填站台網址。
-3. **Authorization callback URL 必須是 `<站台網址>/callback`**。
-4. 把 Client ID／Secret 設到環境變數。
+使用 GitHub App 而非 OAuth App：權限是細粒度的，且可鎖定單一組織與單一 repo。
 
-OAuth 流程由 `src/worker.ts` 的 `handleAuth` 與 `handleCallback` 實作，後者會驗證 state cookie 才換 token。
+App 必須註冊在**組織**底下，不是個人帳號：
+
+1. <https://github.com/organizations/shechen-tw/settings/apps/new>
+2. Homepage URL `https://tw.shechen.workers.dev`，Callback URL `https://tw.shechen.workers.dev/callback`。
+3. 取消 **Expire user authorization tokens**（Decap 不會 refresh，勾選會導致每 8 小時被登出）。
+4. 勾選 **Request user authorization (OAuth) during installation**。
+5. 取消 **Webhook** 的 Active。
+6. 權限只給：Contents `Read and write`、Pull requests `Read and write`、Metadata `Read`。其餘 No access。
+7. **Where can this GitHub App be installed** 選 **Only on this account**（即 `shechen-tw`）。
+8. 左側 Install App → 選 `shechen-tw` → **Only select repositories** → 只勾 `shechen`。
+9. 複製 Client ID、Generate a client secret。
+
+建議再到 <https://github.com/organizations/shechen-tw/settings/installations> 把 GitHub App access 設為需 owner 核准。
+
+### 程式層硬鎖
+
+`wrangler.toml` 的 `GITHUB_REPOSITORY_ID`（目前 `1469486652`）會在換 token 時一併帶上，即使日後安裝範圍放寬，token 仍只綁這一個 repo。
+
+### 權限變更
+
+App 權限改了之後**必須重新安裝**（Settings → Installations → Configure → 重新確認 repo）才會生效。
 
 ## 版本一致性
 
