@@ -1,0 +1,32 @@
+{
+  "name": "shechen-site",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "remoteUser": "node",
+  "postCreateCommand": "corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install",
+  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "astro-build.astro-vscode",
+        "esbenp.prettier-vscode",
+        "EditorConfig.EditorConfig",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[astro]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "files.eol": "\n"
+      }
+    }
+  }
+}

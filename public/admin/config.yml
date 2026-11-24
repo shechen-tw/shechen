@@ -1,0 +1,63 @@
+# Decap CMS 設定
+# 本機開發：`npm run cms` 啟動 decap-server（http://localhost:8081），CMS 會走 local backend。
+local_backend: true
+
+backend:
+  name: github
+  repo: shechen-tw/shechen
+  branch: master
+  base_url: https://shechen.pages.dev # TODO: 換成正式網域
+  auth_endpoint: /auth
+  commit_messages:
+    create: 'cms: 新增 {{collection}}「{{slug}}」'
+    update: 'cms: 更新 {{collection}}「{{slug}}」'
+    delete: 'cms: 刪除 {{collection}}「{{slug}}」'
+    uploadMedia: 'cms: 上傳 {{path}}'
+    deleteMedia: 'cms: 刪除 {{path}}'
+
+site_url: https://shechen.pages.dev # TODO: 換成正式網域
+display_url: https://shechen.pages.dev
+logo_url: ''
+
+locale: zh_Hant
+publish_mode: editorial_workflow
+
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  # 單頁內容（關於、聯絡…）
+  - name: pages
+    label: 頁面
+    label_singular: 頁面
+    folder: src/content/pages
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    identifier_field: title
+    summary: '{{title}}'
+    fields:
+      - { name: title, label: 標題, widget: string }
+      - { name: description, label: 描述, widget: text, required: false }
+      - { name: draft, label: 草稿, widget: boolean, default: true }
+      - { name: body, label: 內容, widget: markdown }
+
+  # 全站設定（選單、社群連結、SEO 預設值…）
+  - name: settings
+    label: 網站設定
+    files:
+      - name: general
+        label: 一般設定
+        file: src/content/settings/general.yml
+        fields:
+          - { name: site_title, label: 網站名稱, widget: string }
+          - { name: site_description, label: 網站描述, widget: text, required: false }
+          - { name: contact_email, label: 聯絡信箱, widget: string, required: false }
+          - name: social
+            label: 社群連結
+            widget: list
+            required: false
+            fields:
+              - { name: label, label: 平台, widget: string }
+              - { name: url, label: 網址, widget: string }

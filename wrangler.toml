@@ -1,0 +1,9 @@
+# Cloudflare Pages 專案設定（本機 `npm run preview` 與 `npm run deploy` 使用）
+name = "shechen"
+compatibility_date = "2026-11-24"
+pages_build_output_dir = "dist"
+
+# 注意：functions/ 目錄會自動被當成 Pages Functions 部署。
+# 非機密變數可放 [vars]；GITHUB_CLIENT_SECRET 請用 `wrangler pages secret put` 或 Pages 後台設定。
+[vars]
+SITE_URL = "http://localhost:4321"

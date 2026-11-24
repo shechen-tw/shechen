@@ -1,0 +1,31 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+.pnpm-store/
+
+# pnpm
+pnpm-debug.log*
+
+# typescript build info
+*.tsbuildinfo
+
+# cloudflare
+.wrangler/
+.dev.vars
+
+# env
+.env
+.env.*
+!.env.example
+
+# decap cms local backend
+.backend/
+
+# editor / os
+.DS_Store
+Thumbs.db
+.idea/
+*.log
