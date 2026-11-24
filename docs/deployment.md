@@ -37,22 +37,54 @@ flowchart LR
 
 ## Workers Builds
 
-連上 GitHub 後，`main` 一有 push 就自動建置與部署，CMS 發布才能真的上線。
+讓「`main` 有新 commit → 自動建置 → 部署」成立，Decap 發布才會真的上線。Workers Builds 是 Cloudflare 內建功能，不需要另寫部署用 CI。
 
-Worker `tw` → Settings → **Build** → Connect repository：
+### 設定
 
-1. 儲存庫選 `shechen-tw/shechen`，分支 `main`。
-2. Build command：`corepack enable && pnpm install --frozen-lockfile && pnpm build`。
-3. Deploy command：`npx wrangler deploy`。
-4. Build variables 設定 `NODE_VERSION=24`。建置映像的預設 Node 版本會隨時間變動，不鎖版本的話 `.nvmrc` 與實際執行環境可能不一致。
-5. 取消非正式分支的部署，只讓 `main` 上線。
+只能從後台設定：`wrangler` 沒有對應指令，`wrangler login` 的 OAuth token 也缺 Workers Builds 權限（直接打 API 會回 `Authentication error`）。要自動化得另建帶 `Workers Builds:Edit` 的 API token。
 
-注意事項：
+Worker `tw` → Settings → **Build** → **Connect repository**：
 
-- Build command 要自己包含 `pnpm install`。Workers Builds 只會執行你填的指令，不會自動安裝依賴。
-- 不要同時在 `wrangler.toml` 加 `[build]`：`wrangler deploy` 會自己再跑一次，變成重複建置。
-- `GITHUB_CLIENT_SECRET` 是 Worker 上的 secret，重新部署不會清掉，不需在 Build variables 重設。
-- 部署身分是 Cloudflare 內的整合，不需要任何人的 API token 存在 repo。
+1. 儲存庫 `shechen-tw/shechen`，production 分支 `main`。
+2. Build command：`corepack enable && pnpm install --frozen-lockfile && pnpm build`
+3. Deploy command：`npx wrangler deploy`
+4. Build variables 加 `NODE_VERSION=24`。建置映像的預設 Node 版本會隨時間變動，不鎖版本的話 `.nvmrc` 與實際執行環境可能不一致。
+5. Path excludes 填 `docs/*`、`*.md`，純文件變更不浪費建置分鐘。
+6. Root directory 留空。
+7. 先不要開啟非 production 分支建置；確認過 `main` 會自動上線後再考慮（見「分支預覽」）。
+
+### 指令為什麼是 pnpm
+
+repo 是 pnpm workspace（`packageManager: pnpm@12.23.0`、`pnpm-workspace.yaml`）。換成 `npm run build` 會讓 `pnpm-workspace.yaml` 的 `minimumReleaseAge`、`allowBuilds` 失效，也不讀 `pnpm-lock.yaml`。
+
+Build command 必須自己帶 `pnpm install`。Workers Builds 只執行你填的指令，不會自動安裝依賴。
+
+### 與 `ci.yml` 的分工
+
+`.github/workflows/ci.yml` 不負責部署，但仍然必要：
+
+- ruleset `protect-main` 的 required status check 名稱就是 `build`，由 `ci.yml` 產生。Workers Builds 的 check 是不同 context，不會滿足它。
+- `ci.yml` 會跑 `pnpm check` 與 `wrangler deploy --dry-run`；Workers Builds 只跑 build 與 deploy，不做型別檢查。
+
+### 不要加 `[build]`
+
+`wrangler.toml` 保持沒有 `[build]` 區塊。`wrangler deploy` 本身就會先跑 Worker 的建置流程，加了會變成重複建置。
+
+### 分支預覽（選用）
+
+開啟非 production 分支建置後，Deploy command 要改成 `npx wrangler versions upload`：產生預覽網址但不上線。一定要換掉 `deploy`，否則較新的 commit 建置失敗時，前一個成功但過期的版本已經在線上了。
+
+草稿只是 commit 到 `cms/` 分支並開 PR，不會動到 `main`，所以壞掉的草稿碰不到正式版。代價是：
+
+- 每個草稿分支都會消耗建置分鐘；免費方案同時只跑 1 個建置，CMS 發布與程式碼 PR 會互相排隊。
+- repo 是公開的，草稿分支內容也看得到。預覽網址是 `*.workers.dev` 的隨機子網域，不是機密，只是猜不到。
+
+### 維運注意
+
+- `wrangler.toml` 的 `[vars]`（`GITHUB_CLIENT_ID`、`SITE_URL`）是 source of truth，每次部署都會覆蓋後台改的值。要改就改 `wrangler.toml`。
+- `GITHUB_CLIENT_SECRET` 是 Worker 上的 secret，重新部署不會清掉，別加進 Build variables。
+- 部署身分是 Cloudflare 的 GitHub 整合，與 `shechen-cms` App 是兩套獨立授權：撤銷其中一邊不會影響另一邊，要收掉得兩邊都處理。
+- 建置失敗網站不會壞，舊版繼續服務。到 Worker → Deployments → build history 看 log。
 
 沒有接 Workers Builds 時，合併 PR 後線上不會跟著更新，必須有人在本機跑 `pnpm deploy`。
 
@@ -103,4 +135,4 @@ npx wrangler deploy --dry-run
 
 ## 回滾
 
-Worker → Deployments 選擇先前的版本重新部署；或 `git revert` 後走 PR。
+Worker → Deployments 選前一個正常版本 rollback，不要用 `wrangler rollback`（它不保證挑到好的版本）。同時 `git revert` 走 PR，否則下次 push 會把壞掉的版本再部署回來。
