@@ -7,6 +7,8 @@ interface Env {
   ASSETS: Fetcher;
   GITHUB_CLIENT_ID: string;
   GITHUB_CLIENT_SECRET: string;
+  /** 選填：限定 token 只能存取這個 repo（GitHub App 的 repository_id 參數）。 */
+  GITHUB_REPOSITORY_ID?: string;
 }
 
 const STATE_COOKIE = 'decap_oauth_state';
@@ -61,7 +63,6 @@ async function handleAuth(url: URL, env: Env): Promise<Response> {
   const authorizeUrl = new URL('https://github.com/login/oauth/authorize');
   authorizeUrl.searchParams.set('client_id', env.GITHUB_CLIENT_ID);
   authorizeUrl.searchParams.set('redirect_uri', `${url.origin}/callback`);
-  authorizeUrl.searchParams.set('scope', 'repo');
   authorizeUrl.searchParams.set('state', state);
 
   const secure = url.protocol === 'https:' ? '; Secure' : '';
@@ -108,6 +109,8 @@ async function handleCallback(request: Request, url: URL, env: Env): Promise<Res
       client_secret: env.GITHUB_CLIENT_SECRET,
       code,
       redirect_uri: `${url.origin}/callback`,
+      // 限制 token 只能存取單一 repo；範圍外的存取會被 GitHub 忽略。
+      ...(env.GITHUB_REPOSITORY_ID ? { repository_id: env.GITHUB_REPOSITORY_ID } : {}),
     }),
   });
 
