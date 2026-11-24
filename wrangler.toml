@@ -15,3 +15,13 @@ run_worker_first = ["/auth", "/callback"]
 SITE_URL = "https://tw.shechen.workers.dev"
 # 限定 CMS token 只能存取 shechen-tw/shechen
 GITHUB_REPOSITORY_ID = "1469486652"
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+# 預覽（非 production 分支）不會繼承非機密變數，需在此另行宣告。
+# 值刻意與正式環境相同：repo 鎖要在預覽也生效，OAuth 也才能對到同一個 callback。
+[previews.vars]
+SITE_URL = "https://tw.shechen.workers.dev"
+GITHUB_REPOSITORY_ID = "1469486652"
