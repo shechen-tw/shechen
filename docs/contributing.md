@@ -9,9 +9,9 @@ Ruleset 名稱 `protect-main`，內容：
 - 禁止刪除分支
 - 禁止強制推送（non-fast-forward）
 - 必須透過 pull request 合併
-- 必要狀態檢查 `build` 必須通過，且分支需為最新（strict）
+- 必要狀態檢查 `build` 必須通過
 - 僅允許 squash 合併
-- `bypass_actors` 為空
+- `bypass_actors` 只有一個例外：CMS 登入使用的帳號（`bypass_mode: always`），原因見 `content-management.md`
 
 ## 日常工作流程
 
@@ -68,5 +68,5 @@ gh api -X PUT repos/shechen-tw/shechen/rulesets/<id> --input ruleset.json
 
 ## 注意
 
-- 因為沒有 bypass，**打錯字也無法直接推 main**，一律走 PR。
+- 除了 CMS 帳號之外沒有任何 bypass，**打錯字也無法直接推 main**，一律走 PR。
 - CMS 的 `publish_mode: editorial_workflow` 會把內容存成 PR 分支，與此規則相容。
