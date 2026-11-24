@@ -9,6 +9,50 @@
 </head>
 
 <body>
+    <script>
+        // 登入回呼若拿不到 window.opener，會把結果廣播過來或留在 localStorage。
+        // 這裡負責把結果交回 Decap（它要求先收到 authorizing 才會開始等 token）。
+        (function () {
+            var KEY = 'decap_oauth_result';
+
+            function deliver(message) {
+                window.postMessage('authorizing:github', window.location.origin);
+                setTimeout(function () {
+                    window.postMessage(message, window.location.origin);
+                }, 50);
+            }
+
+            function clearResult() {
+                setTimeout(function () {
+                    try { localStorage.removeItem(KEY); } catch (e) {}
+                }, 500);
+            }
+
+            // 1. 回呼分頁還開著時，直接廣播進來。
+            try {
+                new BroadcastChannel('decap_oauth').onmessage = function (event) {
+                    if (!event.data) return;
+                    deliver(event.data);
+                    clearResult();
+                };
+            } catch (e) {}
+
+            // 2. 回呼分頁已關閉時，用 localStorage 接手：這次登入改成不開新視窗。
+            var pending = null;
+            try { pending = localStorage.getItem(KEY); } catch (e) {}
+            if (pending) {
+                window.open = function () {
+                    var fake = { closed: false, focus: function () {}, close: function () {} };
+                    setTimeout(function () {
+                        deliver(pending);
+                        pending = null;
+                        clearResult();
+                    }, 0);
+                    return fake;
+                };
+            }
+        })();
+    </script>
     <script src="https://unpkg.com/decap-cms@^3.8.3/dist/decap-cms.js"></script>
 </body>
 
