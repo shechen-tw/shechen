@@ -1,14 +1,14 @@
 {
   "name": "shechen-site",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:24",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "20"
+      "version": "24.22.3"
     }
   },
   "remoteUser": "node",
-  "postCreateCommand": "corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install",
+  "postCreateCommand": "corepack enable && corepack prepare pnpm@12.23.0 --activate && pnpm install",
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
   "customizations": {
     "vscode": {

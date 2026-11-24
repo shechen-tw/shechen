@@ -1,0 +1,14 @@
+# pnpm 設定（pnpm 11 起由 .npmrc 移到此檔）
+# 不把依賴提升到根目錄，保持嚴謹的依賴邊界；Astro 工具鏈需公開提升。
+shamefullyHoist: false
+publicHoistPattern:
+  - '*'
+
+# lockfile 已釘住確切版本，關閉新套件發表冷卻期，避免剛更新就無法安裝。
+minimumReleaseAge: 0
+
+# 允許執行原生建置腳本的套件。
+allowBuilds:
+  esbuild: true
+  sharp: true
+  workerd: true
