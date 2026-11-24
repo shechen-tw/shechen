@@ -49,9 +49,9 @@ Worker `tw` → Settings → **Build** → **Connect repository**：
 2. Build command：`corepack enable && pnpm install --frozen-lockfile && pnpm build`
 3. Deploy command：`npx wrangler deploy`
 4. Build variables 加 `NODE_VERSION=24`。建置映像的預設 Node 版本會隨時間變動，不鎖版本的話 `.nvmrc` 與實際執行環境可能不一致。
-5. Path excludes 填 `docs/*`、`*.md`，純文件變更不浪費建置分鐘。
+5. Path excludes 填 `docs/**`、`README.md`，純文件變更不浪費建置分鐘。**不要填 `*.md`**，理由見「Path excludes 不能擋掉 `*.md`」。
 6. Root directory 留空。
-7. 非 production 分支建置可以一併開啟，行為見「分支預覽」。
+7. 非 production 分支建置**關閉**，理由見「為什麼關閉分支預覽」。
 
 ### 指令為什麼是 pnpm
 
@@ -70,11 +70,22 @@ Build command 必須自己帶 `pnpm install`。Workers Builds 只執行你填的
 
 `wrangler.toml` 保持沒有 `[build]` 區塊。`wrangler deploy` 本身就會先跑 Worker 的建置流程，加了會變成重複建置。
 
-### 分支預覽
+### 為什麼關閉分支預覽
 
-非 production 分支的建置不會動到正式站：Workers Builds 會自動把 deploy 換成 `wrangler preview`，產生獨立的 Preview 版本與網址，Deploy command 不用改。
+開啟時，非 production 分支的建置不會動到正式站：Workers Builds 會自動把 deploy 換成 `wrangler preview`，產生獨立的 Preview 版本與網址，Deploy command 不用改。
 
-`wrangler preview` 要求 `wrangler.toml` 有 `[previews.vars]`，因為預覽不繼承非機密變數。少了這個區塊會在開始建置前就失敗：
+問題是 preview 名稱直接取自分支名，而 preview 名稱只接受英數與 `- _ / . + =`。Decap 的分支名是 `cms/<集合>/<slug>`，slug 預設保留中文，所以每個中文標題的分支都會在開始建置前就失敗：
+
+```
+Preview creation failed: Invalid preview name: name must start and end with
+  alphanumeric characters and may only contain alphanumeric characters and - _ / . + =
+```
+
+改成 ASCII slug 可以救，但要付代價：中文標題會被洗成空字串，所以 `slug` 得加日期前綴，檔名與網址就變成 `2026-11-24.md`、`/2026-11-24/`，認不出是哪一頁。
+
+因此取捨是：**關閉非 production 分支建置，保留中文檔名與中文網址**。PR 把關改由 `ci.yml` 的 `build` 負責（它會真的跑 `pnpm build`），內容排版則用 CMS 編輯畫面右側的預覽窗格看。壞掉的草稿仍然碰不到正式版——草稿只是 commit 到 `cms/` 分支並開 PR。
+
+關閉後 `[previews.vars]` 用不到，但留著無害，之後若改走 ASCII slug 就能直接打開：
 
 ```toml
 [previews.vars]
@@ -86,11 +97,13 @@ GITHUB_REPOSITORY_ID = "1469486652"
 
 Preview 的 secret 是另一套，正式環境的 `GITHUB_CLIENT_SECRET` 不會帶過去。所以在預覽上 `/admin/` 登入會失敗；要驗證登入相關改動，得跑 `npx wrangler preview secret put GITHUB_CLIENT_SECRET` 或在正式站驗。
 
-草稿只是 commit 到 `cms/` 分支並開 PR，不會動到 `main`，所以壞掉的草稿碰不到正式版。代價是：
+### Path excludes 不能擋掉 `*.md`
 
-- 每個分支都會消耗建置分鐘；免費方案同時只跑 1 個建置，CMS 發布與程式碼 PR 會互相排隊。
-- 每個分支都會在 PR 上多一個 check。
-- repo 是公開的，草稿分支內容也看得到。預覽網址是隨機子網域，不是機密，只是猜不到。
+內容就是 markdown。`*.md` 會連 `src/content/**` 一起排掉，結果是：發稿的 commit 只有一個 `.md`，建置被跳過，站上不會更新；GitHub 上只會留下一個永遠停在 queued 的 Cloudflare check suite，看起來像沒觸發，其實是被篩掉了。
+
+所以要排除的只有文件：`docs/**`、`README.md`。若之後把 `src/`、`public/` 也排除，同樣會漏掉真正需要上線的變更。
+
+要確認排除清單還有效，就看一次發稿後的 commit 有沒有跑建置；沒有就是清單太寬。
 
 ### 維運注意
 
@@ -98,8 +111,6 @@ Preview 的 secret 是另一套，正式環境的 `GITHUB_CLIENT_SECRET` 不會�
 - `GITHUB_CLIENT_SECRET` 是 Worker 上的 secret，重新部署不會清掉，別加進 Build variables。
 - 部署身分是 Cloudflare 的 GitHub 整合，與 `shechen-cms` App 是兩套獨立授權：撤銷其中一邊不會影響另一邊，要收掉得兩邊都處理。
 - 建置失敗網站不會壞，舊版繼續服務。到 Worker → Deployments → build history 看 log。
-
-Path excludes 只填文件路徑就好。若連 `src/`、`public/` 也排除，會漏掉真正需要上線的變更。
 
 沒有接 Workers Builds 時，合併 PR 後線上不會跟著更新，必須有人在本機跑 `pnpm deploy`。
 
