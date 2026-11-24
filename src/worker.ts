@@ -35,19 +35,53 @@ function readCookie(cookieHeader: string | null, name: string): string | null {
   return null;
 }
 
+const RESULT_KEY = 'decap_oauth_result';
+const CHANNEL_NAME = 'decap_oauth';
+
 function renderBody(status: 'success' | 'error', content: CmsPayload): string {
-  const payload = JSON.stringify(content).replace(/'/g, "\\'");
+  const payload = JSON.stringify(content);
+  const message = JSON.stringify(`authorization:github:${status}:${payload}`);
+  // 錯誤訊息同時輸出到畫面，方便直接看到原因。
+  const visible =
+    status === 'error'
+      ? `<h1>登入失敗</h1><p id="msg"></p>`
+      : `<h1>登入完成</h1><p>正在把授權交回管理介面…</p>`;
   return `<!doctype html>
 <html><head><meta charset="utf-8" /><title>登入中…</title></head>
 <body>
+${visible}
 <script>
   (function () {
-    function receiveMessage(message) {
-      window.opener.postMessage('authorization:github:${status}:${payload}', message.origin);
-      window.removeEventListener('message', receiveMessage, false);
+    var content = ${payload};
+    var message = ${message};
+    if (content.error) document.getElementById('msg').textContent = content.error;
+
+    // 沒有 window.opener 時的備援（授權頁被開成新分頁，或 GitHub 的 COOP 切斷關係）：
+    // 先廣播給還開著的管理介面，同時留在 localStorage 讓 /admin/ 接手。
+    function fallback() {
+      try {
+        var channel = new BroadcastChannel('${CHANNEL_NAME}');
+        channel.postMessage(message);
+        channel.close();
+      } catch (e) {}
+      try { localStorage.setItem('${RESULT_KEY}', message); } catch (e) {}
+      try { window.close(); } catch (e) {}
+      setTimeout(function () { location.replace('/admin/'); }, 300);
     }
-    window.addEventListener('message', receiveMessage, false);
-    window.opener.postMessage('authorizing:github', '*');
+
+    if (!window.opener) {
+      fallback();
+      return;
+    }
+
+    var timer = setTimeout(fallback, 2000);
+    window.addEventListener('message', function receive(event) {
+      if (event.origin !== window.location.origin) return;
+      clearTimeout(timer);
+      window.removeEventListener('message', receive);
+      window.opener.postMessage(message, event.origin);
+    });
+    window.opener.postMessage('authorizing:github', window.location.origin);
   })();
 </script>
 </body></html>`;
@@ -84,14 +118,20 @@ async function handleCallback(request: Request, url: URL, env: Env): Promise<Res
   const clearCookie = `${STATE_COOKIE}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`;
 
   if (url.searchParams.get('error')) {
-    return html(
-      renderBody('error', { error: url.searchParams.get('error_description') ?? '授權失敗' }),
-      400,
-      { 'Set-Cookie': clearCookie },
-    );
+    const desc = url.searchParams.get('error_description') ?? url.searchParams.get('error');
+    console.error('oauth error from github:', url.searchParams.get('error'), desc);
+    return html(renderBody('error', { error: desc ?? '授權失敗' }), 400, {
+      'Set-Cookie': clearCookie,
+    });
   }
 
   if (!code || !state || !expectedState || state !== expectedState) {
+    console.error('state invalid', {
+      hasCode: Boolean(code),
+      hasState: Boolean(state),
+      hasCookie: Boolean(expectedState),
+      match: state === expectedState,
+    });
     return html(renderBody('error', { error: '無效的 OAuth state 或缺少授權碼' }), 400, {
       'Set-Cookie': clearCookie,
     });
@@ -121,14 +161,22 @@ async function handleCallback(request: Request, url: URL, env: Env): Promise<Res
   };
 
   if (!tokenData.access_token) {
+    console.error(
+      'token exchange failed:',
+      tokenResponse.status,
+      tokenData.error,
+      tokenData.error_description,
+    );
     return html(
       renderBody('error', {
-        error: tokenData.error_description ?? tokenData.error ?? '無法取得 access token',
+        error: `${tokenData.error_description ?? tokenData.error ?? '無法取得 access token'}${tokenData.error ? ` (${tokenData.error})` : ''}`,
       }),
       400,
       { 'Set-Cookie': clearCookie },
     );
   }
+
+  console.log('oauth ok, token prefix:', tokenData.access_token.slice(0, 4));
 
   return html(renderBody('success', { token: tokenData.access_token, provider: 'github' }), 200, {
     'Set-Cookie': clearCookie,
