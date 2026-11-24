@@ -1,5 +1,5 @@
 # Cloudflare Workers 設定（`pnpm preview` 與 `pnpm deploy` 使用）
-name = "shechen"
+name = "tw"
 main = "src/worker.ts"
 compatibility_date = "2026-11-24"
 upload_source_maps = true
@@ -12,4 +12,4 @@ run_worker_first = ["/auth", "/callback"]
 
 # 非機密變數；GITHUB_CLIENT_SECRET 用 `wrangler secret put` 設定。
 [vars]
-SITE_URL = "http://localhost:4321"
+SITE_URL = "https://tw.shechen.workers.dev"
