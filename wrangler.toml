@@ -1,9 +1,15 @@
-# Cloudflare Pages 專案設定（本機 `npm run preview` 與 `npm run deploy` 使用）
+# Cloudflare Workers 設定（`pnpm preview` 與 `pnpm deploy` 使用）
 name = "shechen"
+main = "src/worker.ts"
 compatibility_date = "2026-11-24"
-pages_build_output_dir = "dist"
+upload_source_maps = true
 
-# 注意：functions/ 目錄會自動被當成 Pages Functions 部署。
-# 非機密變數可放 [vars]；GITHUB_CLIENT_SECRET 請用 `wrangler pages secret put` 或 Pages 後台設定。
+# dist 作為靜態資源；只把 OAuth 兩條路由交給 Worker 先處理，其餘直接由資產回應。
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+run_worker_first = ["/auth", "/callback"]
+
+# 非機密變數；GITHUB_CLIENT_SECRET 用 `wrangler secret put` 設定。
 [vars]
 SITE_URL = "http://localhost:4321"

@@ -6,7 +6,8 @@ backend:
   name: github
   repo: shechen-tw/shechen
   branch: master
-  base_url: https://shechen.pages.dev # TODO: 換成正式網域
+  # TODO: 換成 https://shechen.<你的帳號子網域>.workers.dev（或正式網域）
+  base_url: https://shechen.example.workers.dev
   auth_endpoint: /auth
   commit_messages:
     create: 'cms: 新增 {{collection}}「{{slug}}」'
@@ -15,8 +16,10 @@ backend:
     uploadMedia: 'cms: 上傳 {{path}}'
     deleteMedia: 'cms: 刪除 {{path}}'
 
-site_url: https://shechen.pages.dev # TODO: 換成正式網域
-display_url: https://shechen.pages.dev
+# TODO: 同上
+site_url: https://shechen.example.workers.dev
+# TODO: 同上
+display_url: https://shechen.example.workers.dev
 logo_url: ''
 
 locale: zh_Hant
