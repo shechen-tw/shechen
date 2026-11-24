@@ -37,11 +37,15 @@ Cloudflare Workers 會給每個 Worker `https://<worker 名稱>.<帳號子網域
 
 ## 本專案目前的命名
 
-| 位置                               | 值                                                  |
-| ---------------------------------- | --------------------------------------------------- |
-| `wrangler.toml` `name`             | `shechen`                                           |
-| `public/admin/config.yml` 三處 URL | `https://shechen.example.workers.dev`（待填實際值） |
-| GitHub 儲存庫                      | `shechen-tw/shechen`                                |
+| 位置                               | 值                               |
+| ---------------------------------- | -------------------------------- |
+| Cloudflare 帳號 workers.dev 子網域 | `shechen`                        |
+| `wrangler.toml` `name`             | `tw`                             |
+| 實際網址                           | `https://tw.shechen.workers.dev` |
+| `public/admin/config.yml` 三處 URL | 同上                             |
+| GitHub 儲存庫                      | `shechen-tw/shechen`             |
+
+之所以是 `tw.shechen` 而不是 `shechen.tw`：workers.dev 固定為 `<worker 名稱>.<帳號子網域>.workers.dev`，子網域是全帳號共用一組、只能取一次，因此把「品牌」放子網域、把簡短代稱放 worker 名稱。
 
 ## 改名檢查清單
 
@@ -53,6 +57,6 @@ Cloudflare Workers 會給每個 Worker `https://<worker 名稱>.<帳號子網域
 
 ## 在 Cloudflare 後台的操作（人工）
 
-1. `npx wrangler login` 後執行 `pnpm deploy`；首次會建立名為 `shechen` 的 Worker。
+1. `npx wrangler login` 後執行 `pnpm deploy`；首次會建立名為 `tw` 的 Worker，網址 `https://tw.shechen.workers.dev`。
 2. 用 `npx wrangler secret put GITHUB_CLIENT_SECRET` 設定機密。
 3. 需要自有網域時，於 Domains & Routes 綁定完成後才更新 `config.yml`。

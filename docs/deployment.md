@@ -5,7 +5,7 @@
 ```mermaid
 flowchart LR
   dev["開發者"] -->|push| gh["GitHub<br/>shechen-tw/shechen"]
-  dev -->|"pnpm deploy"| wrk["Cloudflare Worker<br/>shechen"]
+  dev -->|"pnpm deploy"| wrk["Cloudflare Worker<br/>tw"]
   gh -->|webhook| wrk
   wrk -->|"ASSETS binding<br/>服務 dist/"| edge["Cloudflare 全球網路"]
   editor["編輯者"] -->|登入 /admin/| oauth["Worker<br/>/auth → GitHub OAuth → /callback"]
@@ -30,7 +30,7 @@ flowchart LR
    ```
 
 2. 設定 `GITHUB_CLIENT_ID`、`SITE_URL`（`wrangler.toml` 的 `[vars]` 或後台）。
-3. `pnpm deploy`，首次會建立名為 `shechen` 的 Worker。
+3. `pnpm deploy`，Worker 名稱為 `tw`，網址 `https://tw.shechen.workers.dev`。
 4. 取得網址後填入 `public/admin/config.yml` 的 `base_url`、`site_url`、`display_url` 並重新部署。
 5. 接上 Workers Builds（連 GitHub、建置指令 `pnpm build`），之後 push 即自動部署。
 
