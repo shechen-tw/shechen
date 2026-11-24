@@ -23,6 +23,8 @@ logo_url: ''
 
 locale: zh_Hant
 publish_mode: editorial_workflow
+# main 的 ruleset 只允許 squash 合併，CMS 預設的 merge 會被拒絕。
+squash_merges: true
 
 media_folder: public/uploads
 public_folder: /uploads
