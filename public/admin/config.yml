@@ -5,7 +5,7 @@ local_backend: true
 backend:
   name: github
   repo: shechen-tw/shechen
-  branch: master
+  branch: main
   # TODO: 換成 https://shechen.<你的帳號子網域>.workers.dev（或正式網域）
   base_url: https://shechen.example.workers.dev
   auth_endpoint: /auth
