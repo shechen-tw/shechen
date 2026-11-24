@@ -17,8 +17,8 @@
 ```mermaid
 flowchart LR
   dev["開發者"] -->|push| gh["GitHub"]
-  dev -->|"pnpm deploy"| wrk["Cloudflare Worker"]
-  gh -->|webhook| wrk
+  gh -->|"push 到 main"| builds["Workers Builds"]
+  builds --> wrk["Cloudflare Worker"]
   wrk -->|ASSETS| edge["Cloudflare 全球網路"]
   editor["編輯者"] -->|"/admin/"| oauth["Worker OAuth"]
   oauth --> gh
