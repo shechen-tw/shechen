@@ -102,7 +102,7 @@ functions/          Cloudflare Pages Functions（OAuth proxy）
 public/admin/       Decap CMS 入口與設定
 src/content/        內容集合（pages、settings）
 src/pages/          頁面
-docs/               交接文件
+docs/               交接與規則文件（含 `domains-and-naming.md`）
 ```
 
 ## CI
