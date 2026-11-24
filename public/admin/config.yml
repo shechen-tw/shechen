@@ -9,6 +9,8 @@ backend:
   # 正式網址
   base_url: https://tw.shechen.workers.dev
   auth_endpoint: /auth
+  # main 的 ruleset 只允許 squash 合併，CMS 預設的 merge 會被拒絕。
+  squash_merges: true
   commit_messages:
     create: 'cms: 新增 {{collection}}「{{slug}}」'
     update: 'cms: 更新 {{collection}}「{{slug}}」'
@@ -23,8 +25,6 @@ logo_url: ''
 
 locale: zh_Hant
 publish_mode: editorial_workflow
-# main 的 ruleset 只允許 squash 合併，CMS 預設的 merge 會被拒絕。
-squash_merges: true
 
 media_folder: public/uploads
 public_folder: /uploads
